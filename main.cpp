@@ -11,11 +11,11 @@ int main(int argc, char* argv[])
 
 	QApplication a(argc, argv);
 
-	WingedEdge we;
+	/*WingedEdge we;
 	we.createCube(100.0);
 	we.saveToVTK("kocka.vtk");
 
-	printf("Kocka bola ulozena do suboru kocka.vtk\n");
+	printf("Kocka bola ulozena do suboru kocka.vtk\n");*/
 
 
 	ImageViewer w;

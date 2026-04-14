@@ -1,4 +1,6 @@
 #include "WingedEdge.h"
+#include "WingedEdge.h"
+#include "WingedEdge.h"
 #include <QFile>
 #include <QTextStream>
 
@@ -162,6 +164,7 @@ void WingedEdge::loadFromVTK(const QString& filename)
     QFile file(filename);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         return;
+    }
 
         QTextStream in(&file);
         QString line;
@@ -223,4 +226,7 @@ void WingedEdge::loadFromVTK(const QString& filename)
 
         connect();
 }
+
+
+
 
