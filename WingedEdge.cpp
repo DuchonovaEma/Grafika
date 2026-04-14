@@ -41,12 +41,7 @@ WingedEdge::~WingedEdge()
 void WingedEdge::createCube(double size)
 {
     //vycistenie
-    for (Vertex* v : vertices) delete v;
-    for (Face* f : faces) delete f;
-    for (W_Edge* e : edges) delete e;
-    vertices.clear();
-    faces.clear();
-    edges.clear();
+    clearCube();
 
     double s = size / 2.0; //kocka centrovana v (0,0,0) -> polka nalavo polka napravo
 
@@ -105,6 +100,16 @@ void WingedEdge::createCube(double size)
     connect();
 }
 
+void WingedEdge::clearCube()
+{
+    for (Vertex* v : vertices) delete v;
+    for (Face* f : faces) delete f;
+    for (W_Edge* e : edges) delete e;
+    vertices.clear();
+    faces.clear();
+    edges.clear();
+}
+
 void WingedEdge::saveToVTK(const QString& filename)
 {
     QFile file(filename);
@@ -149,8 +154,73 @@ void WingedEdge::saveToVTK(const QString& filename)
     file.close();
 }
 
+
 void WingedEdge::loadFromVTK(const QString& filename)
 {
+    clearCube(); //vycistime stare
+
+    QFile file(filename);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        return;
+
+        QTextStream in(&file);
+        QString line;
+
+        for (int i = 0; i < 4; i++) {
+            in.readLine();   //skip hlavicku
+        }
+
+        //vrcholy
+        int numPoints;
+        in >> numPoints;
+        in.readLine();
+
+        for (int i = 0; i < numPoints; i++) {
+            double x, y, z;
+            in >> x >> y >> z;
+            vertices.push_back(new Vertex(x, y, z, nullptr));
+        }
+
+        //trojuholniky
+        int numTriangles, totalNumbers;
+        in >> numTriangles >> totalNumbers;
+        in.readLine();
+
+        for (int i = 0; i < numTriangles; i++) {
+            int count, v1, v2, v3;
+            in >> count >> v1 >> v2 >> v3;
+
+            if (count != 3) continue;  // nie je trojuholník
 
 
+            Vertex* verts[3] = { vertices[v1], vertices[v2], vertices[v3] };
+
+            // Vytvorenie troch hran
+            W_Edge* e1 = new W_Edge(verts[0], verts[1]);
+            W_Edge* e2 = new W_Edge(verts[1], verts[2]);
+            W_Edge* e3 = new W_Edge(verts[2], verts[0]);
+
+            edges.push_back(e1);
+            edges.push_back(e2);
+            edges.push_back(e3);
+
+            // Vytvorenie plochy
+            Face* face = new Face(e1);
+            faces.push_back(face);
+
+            e1->face_left = face;
+            e2->face_left = face;
+            e3->face_left = face;
+
+            e1->edge_left_next = e2;
+            e1->edge_left_prev = e3;
+            e2->edge_left_next = e3;
+            e2->edge_left_prev = e1;
+            e3->edge_left_next = e1;
+            e3->edge_left_prev = e2;
+        }
+        file.close();
+
+        connect();
 }
+

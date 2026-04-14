@@ -33,9 +33,6 @@ public:
 class WingedEdge
 {
 private:
-	void addVertex(double x, double y, double z);
-	void addFace(W_Edge* edge);
-	void addEdge(W_Edge* edge);
 	void connect();
 
 public:
@@ -46,6 +43,7 @@ public:
 	~WingedEdge();
 
 	void createCube(double size);
+	void clearCube();
 	void saveToVTK(const QString& filename);
 	void loadFromVTK(const QString& filename);
 	void draw();
