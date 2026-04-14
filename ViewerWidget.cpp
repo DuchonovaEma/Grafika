@@ -1,8 +1,6 @@
 ﻿#include   "ViewerWidget.h"
 
 
-//check everything odstranit pridat komenty
-
 ViewerWidget::ViewerWidget(QSize imgSize, QWidget* parent)
 	: QWidget(parent)
 {
