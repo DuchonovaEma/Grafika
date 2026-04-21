@@ -1,5 +1,6 @@
 #include "ImageViewer.h"
 
+
 ImageViewer::ImageViewer(QWidget* parent)
 	: QMainWindow(parent), ui(new Ui::ImageViewerClass)
 {
@@ -258,10 +259,16 @@ void ImageViewer::on_actionOpen_triggered()
 	QFileInfo fi(fileName);
 	settings.setValue("folder_img_load_path", fi.absoluteDir().absolutePath());
 
-	if (!openImage(fileName)) {
-		msgBox.setText("Unable to open image.");
-		msgBox.setIcon(QMessageBox::Warning);
-		msgBox.exec();
+
+	if (fileName.endsWith(".vtk", Qt::CaseInsensitive)) {
+		vW->getWingedEdge()->loadFromVTK(fileName);
+	}
+	else {
+		if (!openImage(fileName)) {
+			msgBox.setText("Unable to open image.");
+			msgBox.setIcon(QMessageBox::Warning);
+			msgBox.exec();
+		}
 	}
 }
 void ImageViewer::on_actionSave_as_triggered()

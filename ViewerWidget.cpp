@@ -1,4 +1,5 @@
 ﻿#include   "ViewerWidget.h"
+#include "WingedEdge.h"
 
 
 ViewerWidget::ViewerWidget(QSize imgSize, QWidget* parent)

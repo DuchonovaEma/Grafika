@@ -1,6 +1,5 @@
 #include "WingedEdge.h"
-#include "WingedEdge.h"
-#include "WingedEdge.h"
+#include <QDebug>
 #include <QFile>
 #include <QTextStream>
 
@@ -57,7 +56,7 @@ void WingedEdge::createCube(double size)
     vertices.push_back(new Vertex(s, s, s, nullptr));
     vertices.push_back(new Vertex(-s, s, s, nullptr));
 
-    //funkciu pudhback som si nasla na internete, je z vector, prida prvok nakoniec a resizne vektor
+    //funkciu pushback som si nasla na internete, je z vector, prida prvok nakoniec a resizne vektor
 
     //rozdelenie na trojuholníky
 
@@ -66,37 +65,7 @@ void WingedEdge::createCube(double size)
     };
 
     for (int i = 0; i < 12; i++) {
-        Vertex* v1 = vertices[tris[i][0]];
-        Vertex* v2 = vertices[tris[i][1]];
-        Vertex* v3 = vertices[tris[i][2]];
-        //uloží vrchy trijuholníka
-
-        W_Edge* e1 = new W_Edge(v1, v2);
-        W_Edge* e2 = new W_Edge(v2, v3);
-        W_Edge* e3 = new W_Edge(v3, v1);
-        //hrany medzi vrchmi
-
-        edges.push_back(e1);
-        edges.push_back(e2);
-        edges.push_back(e3);
-
-        Face* face = new Face(e1);
-        faces.push_back(face);
-        //jedna ploska na hrane e1 ktora ma vrchy v1 a v2
-
-        e1->face_left = face;
-        e2->face_left = face;
-        e3->face_left = face;
-        //vsetky hrany maju ako lavu (vnutornu) plosku face
-
-        e1->edge_left_next = e2;
-        e1->edge_left_prev = e3;
-        e2->edge_left_next = e3;
-        e2->edge_left_prev = e1;
-        e3->edge_left_next = e1;
-        e3->edge_left_prev = e2;
-
-
+        addTriangle(tris[i][0], tris[i][1], tris[i][2]);
     }
 
     connect();
@@ -159,74 +128,151 @@ void WingedEdge::saveToVTK(const QString& filename)
 
 void WingedEdge::loadFromVTK(const QString& filename)
 {
-    clearCube(); //vycistime stare
+    clearCube();
 
     QFile file(filename);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qDebug() << "Nepodarilo sa otvorit subor";
         return;
     }
 
-        QTextStream in(&file);
-        QString line;
+    QTextStream in(&file);
 
-        for (int i = 0; i < 4; i++) {
-            in.readLine();   //skip hlavicku
-        }
+    
+    for (int i = 0; i < 4; i++) {
+        in.readLine(); //skip hlavicku
+    }
 
-        //vrcholy
-        int numPoints;
-        in >> numPoints;
-        in.readLine();
+   //vrcholy
+    QString word;
+    int numPoints;
+    in >> word;  // "POINTS"
+    in >> numPoints;  // 8
+    in >> word;  // "float"
 
-        for (int i = 0; i < numPoints; i++) {
-            double x, y, z;
-            in >> x >> y >> z;
-            vertices.push_back(new Vertex(x, y, z, nullptr));
-        }
+    //qDebug() << "Pocet vrcholov:" << numPoints;
 
-        //trojuholniky
-        int numTriangles, totalNumbers;
-        in >> numTriangles >> totalNumbers;
-        in.readLine();
+    for (int i = 0; i < numPoints; i++) {
+        double x, y, z;
+        in >> x >> y >> z;
+        vertices.push_back(new Vertex(x, y, z, nullptr));
+       // qDebug() << "  Vertex" << i << ":" << x << y << z;
+    }
 
-        for (int i = 0; i < numTriangles; i++) {
-            int count, v1, v2, v3;
-            in >> count >> v1 >> v2 >> v3;
+    // trojuholniky
+    in >> word;  // "POLYGONS"
+    int numTriangles, totalNumbers;
+    in >> numTriangles >> totalNumbers;
 
-            if (count != 3) continue;  // nie je trojuholník
+    //qDebug() << "Pocet trojuholnikov:" << numTriangles;
 
+    for (int i = 0; i < numTriangles; i++) {
+        int count, v1, v2, v3;
+        in >> count >> v1 >> v2 >> v3;
 
-            Vertex* verts[3] = { vertices[v1], vertices[v2], vertices[v3] };
+        // qDebug() << "  Trojuholnik" << i << ":" << v1 << v2 << v3;
 
-            // Vytvorenie troch hran
-            W_Edge* e1 = new W_Edge(verts[0], verts[1]);
-            W_Edge* e2 = new W_Edge(verts[1], verts[2]);
-            W_Edge* e3 = new W_Edge(verts[2], verts[0]);
+        if (count != 3) continue;
 
-            edges.push_back(e1);
-            edges.push_back(e2);
-            edges.push_back(e3);
+        addTriangle(v1, v2, v3);
+    }
 
-            // Vytvorenie plochy
-            Face* face = new Face(e1);
-            faces.push_back(face);
+    file.close();
+    connect();
 
-            e1->face_left = face;
-            e2->face_left = face;
-            e3->face_left = face;
+   // qDebug() << "Nacitanie dokoncene. Vrcholy:" << vertices.size() << "Plochy:" << faces.size() << "Hrany:" << edges.size();
 
-            e1->edge_left_next = e2;
-            e1->edge_left_prev = e3;
-            e2->edge_left_next = e3;
-            e2->edge_left_prev = e1;
-            e3->edge_left_next = e1;
-            e3->edge_left_prev = e2;
-        }
-        file.close();
-
-        connect();
 }
 
+void WingedEdge::addTriangle(int i1, int i2, int i3)
+{
+    Vertex* v1 = vertices[i1];
+    Vertex* v2 = vertices[i2];
+    Vertex* v3 = vertices[i3];
+    //uloží vrchy trijuholníka
+
+    W_Edge* e1 = new W_Edge(v1, v2);
+    W_Edge* e2 = new W_Edge(v2, v3);
+    W_Edge* e3 = new W_Edge(v3, v1);
+    //hrany medzi vrchmi
+
+    edges.push_back(e1);
+    edges.push_back(e2);
+    edges.push_back(e3);
+
+    Face* face = new Face(e1);
+    faces.push_back(face);
+    //jedna ploska na hrane e1 ktora ma vrchy v1 a v2
+
+    e1->face_left = face;
+    e2->face_left = face;
+    e3->face_left = face;
+    //vsetky hrany maju ako lavu (vnutornu) plosku face
+
+    e1->edge_left_next = e2;
+    e1->edge_left_prev = e3;
+    e2->edge_left_next = e3;
+    e2->edge_left_prev = e1;
+    e3->edge_left_next = e1;
+    e3->edge_left_prev = e2;
+
+}
+
+void WingedEdge::createUVSphere(float radius, int parallels, int meridians)
+{
+    clearCube();
+
+    //vrcholy
+    vertices.push_back(new Vertex(0, radius, 0, nullptr)); //severny pol
+
+    //rovnobezky
+    for (int i = 0; i < parallels; i++) {
+        double theta = M_PI * (i + 1) / (parallels + 1); 
+        double y = radius * cos(theta);
+        double r = radius * sin(theta); //polomer kruznice danej rovnobezky
+
+        for (int j = 0; j < meridians; j++) { //prechadzam poludnikmi na kazdej rovnobezke
+            double phi = 2 * M_PI * j / meridians; 
+            double x = r * cos(phi);
+            double z = r * sin(phi);
+            vertices.push_back(new Vertex(x, y, z, nullptr)); //vytvorenie vrcholu 
+        }
+    }
+
+    //juzny pol
+    int southPoleIndex = vertices.size();
+    vertices.push_back(new Vertex(0, -radius, 0, nullptr));
+
+    //trojuholniky
+    //medzi severnym polom a prvu rovnobezkou
+    int firstRingStart = 1;
+    for (int j = 0; j < meridians; j++) {
+        addTriangle(0, firstRingStart + j, firstRingStart + (j + 1) % meridians); 
+    }
+
+    //stred
+    for (int i = 0; i < parallels - 1; i++) {
+        int ringStart = 1 + i * meridians;
+        int nextRingStart = 1 + (i + 1) * meridians;
+        for (int j = 0; j < meridians; j++) {
+            int j1 = ringStart + j; //hore vlavo
+            int j2 = ringStart + (j + 1) % meridians; //hore vpravo
+            int k1 = nextRingStart + j; //dple vlavo
+            int k2 = nextRingStart + (j + 1) % meridians; //dole vpravo
+            addTriangle(j1, j2, k2);
+            addTriangle(j1, k2, k1);
+        }
+    }
+
+    // medzi juznym a poslednou rovnpb.
+    int lastRingStart = 1 + (parallels - 1) * meridians;
+    for (int j = 0; j < meridians; j++) {
+        addTriangle(lastRingStart + j, lastRingStart + (j + 1) % meridians, southPoleIndex);
+    }
+
+    connect();
+
+}
 
 
 

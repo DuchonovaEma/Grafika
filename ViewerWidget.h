@@ -1,5 +1,6 @@
 #pragma once
 #include <QtWidgets>
+#include "WingedEdge.h"
 class ViewerWidget :public QWidget {
 	Q_OBJECT
 private:
@@ -28,11 +29,17 @@ private:
 	bool bezierModeActive = false;
 	int bezierSegments = 100;
 
+	WingedEdge* wingedEdge = nullptr;
 
 public:
 	ViewerWidget(QSize imgSize, QWidget* parent = Q_NULLPTR);
 	~ViewerWidget();
 	void resizeWidget(QSize size);
+
+	WingedEdge* getWingedEdge() {
+		if (!wingedEdge) wingedEdge = new WingedEdge();
+		return wingedEdge;
+	}
 
 
 	//Image functions
