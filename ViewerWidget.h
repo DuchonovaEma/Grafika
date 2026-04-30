@@ -56,6 +56,7 @@ public:
 	//Draw functions
 	//line
 	void drawLine(QPoint start, QPoint end, QColor color, int algType = 0);
+	void drawWingedEdge(double azimut, double zenit, int project, double distance,QColor color, int algType);
 	void setDrawLineBegin(QPoint begin) { drawLineBegin = begin; }
 	QPoint getDrawLineBegin() { return drawLineBegin; }
 	void setLineEnd(QPoint end) { lineEnd = end; }

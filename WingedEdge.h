@@ -42,13 +42,16 @@ public:
 
 	~WingedEdge();
 
+	std::vector<W_Edge*> getEdges() { return edges; }
+	std::vector<Vertex*> getVertices() { return vertices; }
+
+
 	void createCube(double size);
 	void clearCube();
 	void saveToVTK(const QString& filename);
 	void loadFromVTK(const QString& filename);
 	void addTriangle(int i1, int i2, int i3);
 	void createUVSphere(float radius, int parallels, int meridians);
-	void draw();
 
 
 

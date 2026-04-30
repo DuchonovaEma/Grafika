@@ -52,4 +52,6 @@ private slots:
 	void on_pushButtonScale_clicked();
 	void on_pushButtonShear_clicked();
 	void on_pushButtonClear_clicked();
+	void on_horizontalSlider_azimut_valueChanged(int value);
+	void on_horizontalSlider_Zenit_valueChanged(int value);
 };

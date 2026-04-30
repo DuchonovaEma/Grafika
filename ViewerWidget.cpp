@@ -1,5 +1,6 @@
 ﻿#include   "ViewerWidget.h"
 #include "WingedEdge.h"
+#include <algorithm>
 
 
 ViewerWidget::ViewerWidget(QSize imgSize, QWidget* parent)
@@ -134,6 +135,78 @@ void ViewerWidget::drawLine(QPoint start, QPoint end, QColor color, int algType)
 	painter.setPen(QPen(color));
 	painter.drawLine(start, end);
 	update();*/
+}
+
+void ViewerWidget::drawWingedEdge(double azimut, double zenit, int project, double distance, QColor color, int algType) {
+
+	if (!wingedEdge) return;
+	clear();
+
+	//rdiany
+	double phi = azimut * M_PI / 180;
+	double theta = zenit * M_PI / 180;
+
+	//normaly
+	double nx = sin(theta) * sin(phi);
+	double ny = sin(theta) * cos(phi);
+	double nz = cos(theta);
+
+		//kolme
+
+	double ux = sin(theta + M_PI / 2.0) * sin(phi);
+	double uy = sin(theta + M_PI / 2.0) * cos(phi);
+	double uz = cos(theta + M_PI / 2.0);
+
+
+	double vx = uy * nz - uz * ny;
+	double vy = uz * nx - ux * nz;
+	double vz = ux * ny - uy * nz;
+
+	//detailnejsia ortonormalizacia lebo som to mala skreslene.  
+	double dot_v_u = vx * ux + vy * uy + vz * uz;
+	double dot_v_n = vx * nx + vy * ny + vz * nz;
+
+	vx = vx - dot_v_u * ux - dot_v_n * nx;
+	vy = vy - dot_v_u * uy - dot_v_n * ny;
+	vz = vz - dot_v_u * uz - dot_v_n * nz;
+
+	int centerX = width() / 2;
+	int centerY = height() / 2;
+
+	for (W_Edge* e : wingedEdge->getEdges()) {
+		Vertex* v1 = e->vert_origin;
+		Vertex* v2 = e->vert_destination;
+
+		// transform
+		double x1p = v1->x * vx + v1->y * vy + v1->z * vz;
+		double y1p = v1->x * ux + v1->y * uy + v1->z * uz;
+		double z1p = v1->x * nx + v1->y * ny + v1->z * nz;
+
+		double x2p = v2->x * vx + v2->y * vy + v2->z * vz;
+		double y2p = v2->x * ux + v2->y * uy + v2->z * uz;
+		double z2p = v2->x * nx + v2->y * ny + v2->z * nz;
+
+		double x1_2d, y1_2d, x2_2d, y2_2d;
+
+		if (project == 0) { //rovnobezna
+			x1_2d = x1p;
+			y1_2d = y1p;
+			x2_2d = x2p;
+			y2_2d = y2p;
+		}
+		else {//stredova
+			x1_2d = (x1p * distance) / (z1p + distance);
+			y1_2d = (y1p * distance) / (z1p + distance);
+			x2_2d = (x2p * distance) / (z2p + distance);
+			y2_2d = (y2p * distance) / (z2p + distance);
+		}
+
+		QPoint p1(x1_2d + centerX, centerY- y1_2d);
+		QPoint p2(x2_2d + centerX,centerY - y2_2d);
+
+		drawLine(p1, p2, color, algType);
+	}
+	update();
 }
 
 void ViewerWidget::finishPolygon(QColor color, int algType)

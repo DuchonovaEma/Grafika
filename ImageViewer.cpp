@@ -262,6 +262,15 @@ void ImageViewer::on_actionOpen_triggered()
 
 	if (fileName.endsWith(".vtk", Qt::CaseInsensitive)) {
 		vW->getWingedEdge()->loadFromVTK(fileName);
+
+		double azimut = ui->horizontalSlider_azimut->value();
+		double zenit = ui->horizontalSlider_Zenit->value();
+		int project = ui->comboBoxProjection->currentIndex();
+		double distance = ui->doubleSpinBoxDistance->value();
+		QColor color = globalColor;
+		int algType = ui->comboBoxLineAlg->currentIndex();
+
+		vW->drawWingedEdge(0, 0, 0, 0, color, algType);
 	}
 	else {
 		if (!openImage(fileName)) {
@@ -362,6 +371,30 @@ void ImageViewer::on_pushButtonShear_clicked()
 void ImageViewer::on_pushButtonClear_clicked()
 {
 	on_actionClear_triggered();
+}
+
+void ImageViewer::on_horizontalSlider_azimut_valueChanged(int value)
+{
+	ui->label_AzimutValue->setText(QString::number(value));
+
+	double azimut = value;
+	double zenit = ui->horizontalSlider_Zenit->value();
+	int project = ui->comboBoxProjection->currentIndex();
+	double distance = ui->doubleSpinBoxDistance->value();
+
+	vW->drawWingedEdge(azimut, zenit, project, distance, globalColor, ui->comboBoxLineAlg->currentIndex());
+}
+
+void ImageViewer::on_horizontalSlider_Zenit_valueChanged(int value)
+{
+	ui->label_ZenitValue->setText(QString::number(value));
+
+	double azimut = ui->horizontalSlider_azimut->value();
+	double zenit = value;
+	int project = ui->comboBoxProjection->currentIndex();
+	double distance = ui->doubleSpinBoxDistance->value();
+
+	vW->drawWingedEdge(azimut, zenit, project, distance, globalColor, ui->comboBoxLineAlg->currentIndex());
 }
 
 
