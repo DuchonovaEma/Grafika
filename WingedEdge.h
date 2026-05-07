@@ -44,6 +44,8 @@ public:
 
 	std::vector<W_Edge*> getEdges() { return edges; }
 	std::vector<Vertex*> getVertices() { return vertices; }
+	std::vector<Face*> getFaces() { return faces; }
+
 
 
 	void createCube(double size);

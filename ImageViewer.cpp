@@ -397,5 +397,20 @@ void ImageViewer::on_horizontalSlider_Zenit_valueChanged(int value)
 	vW->drawWingedEdge(azimut, zenit, project, distance, globalColor, ui->comboBoxLineAlg->currentIndex());
 }
 
+void ImageViewer::on_pushButtonColorCube_clicked()
+{
+	if (vW->getWingedEdge()->getFaces().empty()) {
+		QMessageBox::warning(this, "Chyba", "Najprv naèítaj VTK kocku!");
+		return;
+	}
+	double azimut = ui->horizontalSlider_azimut->value();
+	double zenit = ui->horizontalSlider_Zenit->value();
+	int project = ui->comboBoxProjection->currentIndex();
+	double distance = ui->doubleSpinBoxDistance->value();
+
+	vW->drawColoredCube(azimut, zenit, project, distance);
+
+}
+
 
 

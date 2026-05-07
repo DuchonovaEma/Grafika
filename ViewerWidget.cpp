@@ -14,6 +14,8 @@ ViewerWidget::ViewerWidget(QSize imgSize, QWidget* parent)
 		resizeWidget(img->size());
 		setDataPtr();
 	}
+
+	initBuffers();
 }
 ViewerWidget::~ViewerWidget()
 {
@@ -27,6 +29,164 @@ void ViewerWidget::resizeWidget(QSize size)
 	this->setMinimumSize(size);
 	this->setMaximumSize(size);
 }
+
+void ViewerWidget::initBuffers()
+{
+	bufferWidth = width();
+	bufferHeight = height();
+
+	fBuffer.resize(bufferWidth);
+	zBuffer.resize(bufferHeight);
+
+	for (int i = 0; i < bufferWidth; i++) {
+		fBuffer[i].resize(bufferHeight);
+		zBuffer[i].resize(bufferHeight);
+
+		for (int j = 0; j < bufferHeight; j++) {
+			fBuffer[i][j] = Qt::black; //nastavime f na ciernu
+			zBuffer[i][j] = INFINITY; //nastavime z na daleku hodnotu
+		}
+	}
+}
+
+void ViewerWidget::clearBuffers()
+{
+	for (int x = 0; x < bufferWidth; x++) {
+		for (int y = 0; y < bufferHeight; y++) {
+			fBuffer[x][y] = Qt::black;
+			zBuffer[x][y] = INFINITY;
+		}
+	}
+}
+
+void ViewerWidget::drawPixel(int x, int y, const QColor& color, double z)
+{
+	if (!isInside(x, y)) return;
+	if (z < zBuffer[x][y]) {
+		zBuffer[x][y] = z;
+		fBuffer[x][y] = color;
+
+		setPixel(x, y, color);
+	}
+}
+
+
+void ViewerWidget::drawColoredCube(double azimut, double zenit, int project, double distance)
+{
+	if (!wingedEdge) return;
+	if (wingedEdge->getFaces().empty()) return;
+
+	//rdiany
+	double phi = azimut * M_PI / 180;
+	double theta = zenit * M_PI / 180;
+
+	//normaly
+	double nx = sin(theta) * sin(phi);
+	double ny = sin(theta) * cos(phi);
+	double nz = cos(theta);
+
+	//kolme
+
+	double ux = sin(theta + M_PI / 2.0) * sin(phi);
+	double uy = sin(theta + M_PI / 2.0) * cos(phi);
+	double uz = cos(theta + M_PI / 2.0);
+
+
+	double vx = uy * nz - uz * ny;
+	double vy = uz * nx - ux * nz;
+	double vz = ux * ny - uy * nz;
+
+	//detailnejsia ortonormalizacia lebo som to mala skreslene.  
+	double dot_v_u = vx * ux + vy * uy + vz * uz;
+	double dot_v_n = vx * nx + vy * ny + vz * nz;
+
+	vx = vx - dot_v_u * ux - dot_v_n * nx;
+	vy = vy - dot_v_u * uy - dot_v_n * ny;
+	vz = vz - dot_v_u * uz - dot_v_n * nz;
+
+	
+
+	clearBuffers();
+
+	QVector<QColor> colors = {
+	   Qt::red, Qt::red,        // spodna stena
+	   Qt::green, Qt::green,    // horna stena
+	   Qt::blue, Qt::blue,      // predna stena
+	   Qt::yellow, Qt::yellow,  // zadna stena
+	   Qt::cyan, Qt::cyan,      // lava stena
+	   Qt::magenta, Qt::magenta // prava stena
+	};
+
+	int centerX = width() / 2;
+	int centerY = height() / 2;
+
+	int idx = 0;
+	for (Face* face : wingedEdge->getFaces()) { //prechadza vsetky trojuholnoky, uklada startovaciu hranu 
+		W_Edge* e = face->edge;
+		QPoint points[3];
+		double zVals[3];
+
+		int sx, sy;
+		for (int i = 0; i < 3; i++) { //prechadza hrany, posuva dostredu, uklada vrchy a ich z hodnotu
+			Vertex* v = e->vert_origin;
+			double xp = v->x * vx + v->y * vy + v->z * vz;
+			double yp = v->x * ux + v->y * uy + v->z * uz;
+			double zp = v->x * nx + v->y * ny + v->z * nz;
+
+			
+			if (project == 0) {
+				if (xp + centerX >= 0.0)
+					sx = (int)(xp + centerX + 0.5);   //kladne
+				else
+					sx = (int)(xp + centerX - 0.5);   //zaporne
+
+				
+				if (yp >= 0.0)
+					sy = (int)(yp + 0.5);
+				else
+					sy = (int)(yp - 0.5);
+
+				
+				points[i] = QPoint(sx, centerY - sy); //zaokruhlene dobre
+			}
+			else {
+				double d = distance;
+				double sx_d = (xp * d) / (zp + d);
+				double sy_d = (yp * d) / (zp + d);
+
+			
+				if (sx_d + centerX >= 0.0)
+					sx = (int)(sx_d + centerX + 0.5);
+				else
+					sx = (int)(sx_d + centerX - 0.5);
+
+				
+				if (sy_d >= 0.0)
+					sy = (int)(sy_d + 0.5);
+				else
+					sy = (int)(sy_d - 0.5);
+
+				points[i] = QPoint(sx, centerY - sy);
+			}
+			zVals[i] = zp;
+
+			e = e->edge_left_next;
+		}
+
+		if (triangleArea(points[0], points[1], points[2]) <= 0.0) {
+			idx++;
+			continue;
+		}
+
+		double avgZ = (zVals[0] + zVals[1] + zVals[2]) / 3.0; //priemer z
+
+		fillTriangleScanline(points[0], points[1], points[2], colors[idx], avgZ);
+		idx++;
+	}
+	update();
+}
+
+
 
 //Image functions
 bool ViewerWidget::setImage(const QImage& inputImg)
@@ -342,7 +502,7 @@ void ViewerWidget::drawLineBresenham(QPoint start, QPoint end, QColor color)
 		if(dy >= 0){ //0<m<1
 			 k1 = 2 * dy;       
 			 k2 = 2 * dy - 2 * dx; 
-			 p = 2 * dy - dx;     
+			 p = 2 * dy - dx;    
 
 			setPixel(x, y, color);
 
@@ -1071,7 +1231,7 @@ void ViewerWidget::fillTriangleBarycentric(QPoint p0, QPoint p1, QPoint p2,
 	if (p1.y() > p2.y()) { std::swap(p1, p2); std::swap(c1, c2); }
 
 	
-	double area = abs((p1.x() - p0.x()) * (p2.y() - p0.y()) - (p2.x() - p0.x()) * (p1.y() - p0.y())) / 2.0;
+	double area = triangleArea(p0, p1, p2);
 	if (area <= 0) return;
 
 	
@@ -1094,9 +1254,9 @@ void ViewerWidget::fillTriangleBarycentric(QPoint p0, QPoint p1, QPoint p2,
 
 
 		for (int x = xStart; x <= xEnd; x++) {
-			double w0 = abs((p1.x() - x) * (p2.y() - y) - (p2.x() - x) * (p1.y() - y)) / 2.0;
-			double w1 = abs((p0.x() - x) * (p2.y() - y) - (p2.x() - x) * (p0.y() - y)) / 2.0;
-			double w2 = abs((p0.x() - x) * (p1.y() - y) - (p1.x() - x) * (p0.y() - y)) / 2.0;
+			double w0 = triangleArea(QPoint(x, y), p1, p2);
+			double w1 = triangleArea(p0, QPoint(x, y), p2);
+			double w2 = triangleArea(p0, p1, QPoint(x, y));
 
 			w0 /= area;
 			w1 /= area;
@@ -1110,6 +1270,88 @@ void ViewerWidget::fillTriangleBarycentric(QPoint p0, QPoint p1, QPoint p2,
 		}
 	}
 	update();
+}
+
+void ViewerWidget::fillTriangleScanline(QPoint p0, QPoint p1, QPoint p2, QColor color, double z)
+{
+	// Usporiadanie podľa Y (a podľa X pri rovnakom Y)
+	if (p0.y() > p1.y()) std::swap(p0, p1);
+	if (p0.y() > p2.y()) std::swap(p0, p2);
+	if (p1.y() > p2.y()) std::swap(p1, p2);
+	if (p0.y() == p1.y() && p0.x() > p1.x()) std::swap(p0, p1);
+	if (p1.y() == p2.y() && p1.x() > p2.x()) std::swap(p1, p2);
+
+	if (p0.y() == p1.y()) {
+		//spodny
+		fillBottomTriangle(p0, p1, p2, color, z);
+	}
+	else if (p1.y() == p2.y()) {
+		// horny
+		fillTopTriangle(p0, p1, p2, color, z);
+	}
+	else {
+		// Deliaci bod P
+		double Px = p0.x() + (double)(p1.y() - p0.y()) * (p2.x() - p0.x()) / (double)(p2.y() - p0.y());
+		QPoint P(Px, p1.y());
+
+		if (p1.x() < Px) {
+			fillTriangleScanline(p0, p1, P, color, z);
+			fillTriangleScanline(p1, P, p2, color, z);
+		}
+		else {
+			fillTriangleScanline(p0, P, p1, color, z);
+			fillTriangleScanline(P, p1, p2, color, z);
+		}
+	}
+}
+
+void ViewerWidget::fillTopTriangle(QPoint p0, QPoint p1, QPoint p2, QColor color, double z)
+{
+	// p1 a p2 rovnae
+	// p0 hore
+	if (p1.x() > p2.x()) std::swap(p1, p2);
+
+	double w1 = (double)(p1.x() - p0.x()) / (double)(p1.y() - p0.y());
+	double w2 = (double)(p2.x() - p0.x()) / (double)(p2.y() - p0.y());
+
+	double x1 = p0.x();
+	double x2 = p0.x();
+	int y = p0.y();
+	int yEnd = p1.y();
+
+	while (y <= yEnd) {
+		int xStart = (int)ceil(x1);
+		int xEnd = (int)floor(x2);
+		for (int x = xStart; x <= xEnd; x++) drawPixel(x, y, color, z);
+		x1 += w1;
+		x2 += w2;
+		y++;
+	}
+}
+
+
+void ViewerWidget::fillBottomTriangle(QPoint p0, QPoint p1, QPoint p2, QColor color, double z)
+{
+	// p0 a p1 rovnake
+	// p2 je dole
+	if (p0.x() > p1.x()) std::swap(p0, p1);
+
+	double w1 = (double)(p2.x() - p0.x()) / (double)(p2.y() - p0.y());
+	double w2 = (double)(p2.x() - p1.x()) / (double)(p2.y() - p1.y());
+
+	double x1 = p0.x();
+	double x2 = p1.x();
+	int y = p0.y();
+	int yEnd = p2.y();
+
+	while (y <= yEnd) {
+		int xStart = (int)ceil(x1);
+		int xEnd = (int)floor(x2);
+		for (int x = xStart; x <= xEnd; x++) drawPixel(x, y, color, z);
+		x1 += w1;
+		x2 += w2;
+		y++;
+	}
 }
 
 double ViewerWidget::triangleArea(QPoint a, QPoint b, QPoint c)
@@ -1156,7 +1398,7 @@ void ViewerWidget::drawBezierCurve()
 
 	drawLine(Q0, bezierPoints.last(), Qt::blue, 0);
 
-	//aby bolo vidno
+	//aby bolo vi
 	for (const QPoint& p : bezierPoints) {
 		setPixel(p.x(), p.y(), Qt::red);
 	}

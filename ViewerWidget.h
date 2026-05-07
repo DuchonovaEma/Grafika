@@ -31,6 +31,11 @@ private:
 
 	WingedEdge* wingedEdge = nullptr;
 
+	QVector<QVector<double>> zBuffer;
+	QVector<QVector<QColor>> fBuffer;
+	int bufferWidth = 0;
+	int bufferHeight = 0;
+
 public:
 	ViewerWidget(QSize imgSize, QWidget* parent = Q_NULLPTR);
 	~ViewerWidget();
@@ -40,6 +45,13 @@ public:
 		if (!wingedEdge) wingedEdge = new WingedEdge();
 		return wingedEdge;
 	}
+
+	void initBuffers();
+	void clearBuffers();
+	void drawPixel(int x, int y, const QColor& color, double z);
+
+
+	void drawColoredCube(double azimut, double zenit, int project, double distance);
 
 
 	//Image functions
@@ -115,6 +127,10 @@ public:
 	bool isPointInsidePolygon(QPoint point);
 
 	void fillTriangleBarycentric(QPoint p0, QPoint p1, QPoint p2, QColor c0, QColor c1, QColor c2);
+
+	void fillTriangleScanline(QPoint p0, QPoint p1, QPoint p2, QColor color, double z);
+	void fillTopTriangle(QPoint p0, QPoint p1, QPoint p2, QColor color, double z);
+	void fillBottomTriangle(QPoint p0, QPoint p1, QPoint p2, QColor color, double z);
 
 	double triangleArea(QPoint a, QPoint b, QPoint c);
 

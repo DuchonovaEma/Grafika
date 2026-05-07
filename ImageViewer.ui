@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>818</width>
-    <height>646</height>
+    <width>1240</width>
+    <height>858</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -25,8 +25,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>469</width>
-         <height>448</height>
+         <width>932</width>
+         <height>459</height>
         </rect>
        </property>
       </widget>
@@ -52,7 +52,7 @@
          </item>
         </widget>
        </item>
-       <item row="1" column="2">
+       <item row="1" column="4">
         <widget class="QSlider" name="horizontalSlider_azimut">
          <property name="maximum">
           <number>360</number>
@@ -69,7 +69,14 @@
          </property>
         </widget>
        </item>
-       <item row="2" column="2">
+       <item row="3" column="2">
+        <widget class="QLabel" name="label_18">
+         <property name="text">
+          <string>Distance</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="4">
         <widget class="QSlider" name="horizontalSlider_Zenit">
          <property name="minimum">
           <number>-90</number>
@@ -82,10 +89,10 @@
          </property>
         </widget>
        </item>
-       <item row="2" column="3">
+       <item row="2" column="5">
         <widget class="QLabel" name="label_ZenitValue">
          <property name="text">
-          <string>TextLabel</string>
+          <string>0</string>
          </property>
         </widget>
        </item>
@@ -96,18 +103,229 @@
          </property>
         </widget>
        </item>
-       <item row="1" column="3">
-        <widget class="QLabel" name="label_AzimutValue">
-         <property name="text">
-          <string>TextLabel</string>
-         </property>
-        </widget>
-       </item>
        <item row="3" column="1">
         <widget class="QDoubleSpinBox" name="doubleSpinBoxDistance">
          <property name="maximum">
           <double>500.000000000000000</double>
          </property>
+        </widget>
+       </item>
+       <item row="1" column="5">
+        <widget class="QLabel" name="label_AzimutValue">
+         <property name="text">
+          <string>0</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="3">
+        <widget class="QPushButton" name="pushButtonColorCube">
+         <property name="text">
+          <string>Color Cube</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="2" column="0">
+     <widget class="QGroupBox" name="groupBox_6">
+      <property name="title">
+       <string>Svetlo</string>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <widget class="QGroupBox" name="groupBox_7">
+         <property name="title">
+          <string>Source</string>
+         </property>
+         <layout class="QFormLayout" name="formLayout">
+          <item row="0" column="0">
+           <widget class="QSpinBox" name="sbX"/>
+          </item>
+          <item row="1" column="0">
+           <widget class="QSpinBox" name="sbY"/>
+          </item>
+          <item row="2" column="0">
+           <widget class="QSpinBox" name="sbZ"/>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLabel" name="label_3">
+            <property name="text">
+             <string>X</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLabel" name="label_4">
+            <property name="text">
+             <string>Y</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QLabel" name="label_5">
+            <property name="text">
+             <string>Z</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox_8">
+         <property name="title">
+          <string>Source color</string>
+         </property>
+         <layout class="QFormLayout" name="formLayout_2">
+          <item row="0" column="0">
+           <widget class="QSpinBox" name="sbR"/>
+          </item>
+          <item row="1" column="0">
+           <widget class="QSpinBox" name="sbG"/>
+          </item>
+          <item row="2" column="0">
+           <widget class="QSpinBox" name="sbB"/>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLabel" name="label_6">
+            <property name="text">
+             <string>R</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLabel" name="label_7">
+            <property name="text">
+             <string>G</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QLabel" name="label_8">
+            <property name="text">
+             <string>B</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox_9">
+         <property name="title">
+          <string>Ambient color</string>
+         </property>
+         <layout class="QFormLayout" name="formLayout_3">
+          <item row="0" column="0">
+           <widget class="QSpinBox" name="sbAR"/>
+          </item>
+          <item row="1" column="0">
+           <widget class="QSpinBox" name="sbAG"/>
+          </item>
+          <item row="2" column="0">
+           <widget class="QSpinBox" name="sbAB"/>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLabel" name="label_9">
+            <property name="text">
+             <string>R</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLabel" name="label_10">
+            <property name="text">
+             <string>G</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QLabel" name="label_11">
+            <property name="text">
+             <string>B</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox_10">
+         <property name="title">
+          <string>POM koeficienty</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_6">
+          <item row="4" column="3">
+           <widget class="QDoubleSpinBox" name="doubleSpinBox_AB"/>
+          </item>
+          <item row="4" column="1">
+           <widget class="QDoubleSpinBox" name="doubleSpinBox_AR"/>
+          </item>
+          <item row="2" column="1">
+           <widget class="QDoubleSpinBox" name="doubleSpinBox_DR"/>
+          </item>
+          <item row="3" column="1">
+           <widget class="QDoubleSpinBox" name="doubleSpinBox_RR"/>
+          </item>
+          <item row="3" column="3">
+           <widget class="QDoubleSpinBox" name="doubleSpinBox_RB"/>
+          </item>
+          <item row="2" column="2">
+           <widget class="QDoubleSpinBox" name="doubleSpinBox_DG"/>
+          </item>
+          <item row="2" column="3">
+           <widget class="QDoubleSpinBox" name="doubleSpinBox_DB"/>
+          </item>
+          <item row="4" column="2">
+           <widget class="QDoubleSpinBox" name="doubleSpinBox_AG"/>
+          </item>
+          <item row="3" column="2">
+           <widget class="QDoubleSpinBox" name="doubleSpinBox_RG"/>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_12">
+            <property name="text">
+             <string>difusion</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="label_13">
+            <property name="text">
+             <string>reflection</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="label_14">
+            <property name="text">
+             <string>ambient</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLabel" name="label_15">
+            <property name="text">
+             <string>R</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2">
+           <widget class="QLabel" name="label_16">
+            <property name="text">
+             <string>G</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="3">
+           <widget class="QLabel" name="label_17">
+            <property name="text">
+             <string>B</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </widget>
        </item>
       </layout>
@@ -120,7 +338,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>818</width>
+     <width>1240</width>
      <height>21</height>
     </rect>
    </property>
@@ -182,13 +400,6 @@
         <string>Draw</string>
        </property>
        <layout class="QGridLayout" name="gridLayout">
-        <item row="1" column="4">
-         <widget class="QPushButton" name="pushButtonClear">
-          <property name="text">
-           <string>Clear</string>
-          </property>
-         </widget>
-        </item>
         <item row="1" column="0">
          <widget class="QToolButton" name="toolButtonDrawLine">
           <property name="text">
