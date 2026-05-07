@@ -36,6 +36,14 @@ private:
 	int bufferWidth = 0;
 	int bufferHeight = 0;
 
+	struct TransformedPoint {
+		QPoint screen;
+		double z;
+	};
+
+	TransformedPoint transformVertex(Vertex* v, double azimut, double zenit, int project, double distance, int centerX, int centerY);
+
+
 public:
 	ViewerWidget(QSize imgSize, QWidget* parent = Q_NULLPTR);
 	~ViewerWidget();
@@ -52,6 +60,9 @@ public:
 
 
 	void drawColoredCube(double azimut, double zenit, int project, double distance);
+
+	void drawColoredModel(double azimut, double zenit, int project, double distance, QColor color);
+	
 
 
 	//Image functions

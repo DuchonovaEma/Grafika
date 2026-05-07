@@ -412,5 +412,18 @@ void ImageViewer::on_pushButtonColorCube_clicked()
 
 }
 
+void ImageViewer::on_pushButtonColorModel_clicked() {
+
+	if (vW->getWingedEdge()->getFaces().empty()) {
+		QMessageBox::warning(this, "Chyba", "Najprv naèítaj VTK model!");
+		return;
+	}
+	double azimut = ui->horizontalSlider_azimut->value();
+	double zenit = ui->horizontalSlider_Zenit->value();
+	int project = ui->comboBoxProjection->currentIndex();
+	double distance = ui->doubleSpinBoxDistance->value();
+
+	vW->drawColoredModel(azimut, zenit, project, distance, globalColor);
+}
 
 

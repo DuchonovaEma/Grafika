@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1240</width>
-    <height>858</height>
+    <width>937</width>
+    <height>675</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -25,8 +25,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>932</width>
-         <height>459</height>
+         <width>629</width>
+         <height>276</height>
         </rect>
        </property>
       </widget>
@@ -52,7 +52,7 @@
          </item>
         </widget>
        </item>
-       <item row="1" column="4">
+       <item row="1" column="5">
         <widget class="QSlider" name="horizontalSlider_azimut">
          <property name="maximum">
           <number>360</number>
@@ -76,7 +76,7 @@
          </property>
         </widget>
        </item>
-       <item row="2" column="4">
+       <item row="2" column="5">
         <widget class="QSlider" name="horizontalSlider_Zenit">
          <property name="minimum">
           <number>-90</number>
@@ -89,10 +89,17 @@
          </property>
         </widget>
        </item>
-       <item row="2" column="5">
+       <item row="2" column="6">
         <widget class="QLabel" name="label_ZenitValue">
          <property name="text">
           <string>0</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="3">
+        <widget class="QPushButton" name="pushButtonColorCube">
+         <property name="text">
+          <string>Color Cube Set</string>
          </property>
         </widget>
        </item>
@@ -110,17 +117,17 @@
          </property>
         </widget>
        </item>
-       <item row="1" column="5">
+       <item row="1" column="6">
         <widget class="QLabel" name="label_AzimutValue">
          <property name="text">
           <string>0</string>
          </property>
         </widget>
        </item>
-       <item row="3" column="3">
-        <widget class="QPushButton" name="pushButtonColorCube">
+       <item row="3" column="4">
+        <widget class="QPushButton" name="pushButtonColorModel">
          <property name="text">
-          <string>Color Cube</string>
+          <string>Color Model</string>
          </property>
         </widget>
        </item>
@@ -338,7 +345,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1240</width>
+     <width>937</width>
      <height>21</height>
     </rect>
    </property>

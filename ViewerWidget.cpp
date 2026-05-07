@@ -3,6 +3,57 @@
 #include <algorithm>
 
 
+ViewerWidget::TransformedPoint ViewerWidget::transformVertex(Vertex* v, double azimut, double zenit, int project, double distance, int centerX, int centerY)
+{
+
+	//rdiany
+	double phi = azimut * M_PI / 180;
+	double theta = zenit * M_PI / 180;
+
+	//normaly
+	double nx = sin(theta) * sin(phi);
+	double ny = sin(theta) * cos(phi);
+	double nz = cos(theta);
+
+	//kolme
+
+	double ux = sin(theta + M_PI / 2.0) * sin(phi);
+	double uy = sin(theta + M_PI / 2.0) * cos(phi);
+	double uz = cos(theta + M_PI / 2.0);
+
+
+	double vx = uy * nz - uz * ny;
+	double vy = uz * nx - ux * nz;
+	double vz = ux * ny - uy * nz;
+
+	//detailnejsia ortonormalizacia lebo som to mala skreslene.  
+	double dot_v_u = vx * ux + vy * uy + vz * uz;
+	double dot_v_n = vx * nx + vy * ny + vz * nz;
+
+	vx = vx - dot_v_u * ux - dot_v_n * nx;
+	vy = vy - dot_v_u * uy - dot_v_n * ny;
+	vz = vz - dot_v_u * uz - dot_v_n * nz;
+
+
+	double xp = v->x * vx + v->y * vy + v->z * vz;
+	double yp = v->x * ux + v->y * uy + v->z * uz;
+	double zp = v->x * nx + v->y * ny + v->z * nz;
+
+	int sx, sy;
+	if (project == 0) { // rovnobezne
+		sx = (int)round(xp + centerX);
+		sy = (int)round(centerY - yp);
+	}
+	else { // perspektivne
+		double d = distance;
+		sx = (int)round((xp * d) / (zp + d) + centerX);
+		sy = (int)round(centerY - (yp * d) / (zp + d));
+	}
+
+	return { QPoint(sx, sy), zp };
+
+}
+
 ViewerWidget::ViewerWidget(QSize imgSize, QWidget* parent)
 	: QWidget(parent)
 {
@@ -76,36 +127,6 @@ void ViewerWidget::drawColoredCube(double azimut, double zenit, int project, dou
 	if (!wingedEdge) return;
 	if (wingedEdge->getFaces().empty()) return;
 
-	//rdiany
-	double phi = azimut * M_PI / 180;
-	double theta = zenit * M_PI / 180;
-
-	//normaly
-	double nx = sin(theta) * sin(phi);
-	double ny = sin(theta) * cos(phi);
-	double nz = cos(theta);
-
-	//kolme
-
-	double ux = sin(theta + M_PI / 2.0) * sin(phi);
-	double uy = sin(theta + M_PI / 2.0) * cos(phi);
-	double uz = cos(theta + M_PI / 2.0);
-
-
-	double vx = uy * nz - uz * ny;
-	double vy = uz * nx - ux * nz;
-	double vz = ux * ny - uy * nz;
-
-	//detailnejsia ortonormalizacia lebo som to mala skreslene.  
-	double dot_v_u = vx * ux + vy * uy + vz * uz;
-	double dot_v_n = vx * nx + vy * ny + vz * nz;
-
-	vx = vx - dot_v_u * ux - dot_v_n * nx;
-	vy = vy - dot_v_u * uy - dot_v_n * ny;
-	vz = vz - dot_v_u * uz - dot_v_n * nz;
-
-	
-
 	clearBuffers();
 
 	QVector<QColor> colors = {
@@ -126,49 +147,12 @@ void ViewerWidget::drawColoredCube(double azimut, double zenit, int project, dou
 		QPoint points[3];
 		double zVals[3];
 
-		int sx, sy;
-		for (int i = 0; i < 3; i++) { //prechadza hrany, posuva dostredu, uklada vrchy a ich z hodnotu
+		
+		for (int i = 0; i < 3; i++) { 
 			Vertex* v = e->vert_origin;
-			double xp = v->x * vx + v->y * vy + v->z * vz;
-			double yp = v->x * ux + v->y * uy + v->z * uz;
-			double zp = v->x * nx + v->y * ny + v->z * nz;
-
-			
-			if (project == 0) {
-				if (xp + centerX >= 0.0)
-					sx = (int)(xp + centerX + 0.5);   //kladne
-				else
-					sx = (int)(xp + centerX - 0.5);   //zaporne
-
-				
-				if (yp >= 0.0)
-					sy = (int)(yp + 0.5);
-				else
-					sy = (int)(yp - 0.5);
-
-				
-				points[i] = QPoint(sx, centerY - sy); //zaokruhlene dobre
-			}
-			else {
-				double d = distance;
-				double sx_d = (xp * d) / (zp + d);
-				double sy_d = (yp * d) / (zp + d);
-
-			
-				if (sx_d + centerX >= 0.0)
-					sx = (int)(sx_d + centerX + 0.5);
-				else
-					sx = (int)(sx_d + centerX - 0.5);
-
-				
-				if (sy_d >= 0.0)
-					sy = (int)(sy_d + 0.5);
-				else
-					sy = (int)(sy_d - 0.5);
-
-				points[i] = QPoint(sx, centerY - sy);
-			}
-			zVals[i] = zp;
+			TransformedPoint tp = transformVertex(v, azimut, zenit, project, distance, centerX, centerY);
+			points[i] = tp.screen;
+			zVals[i] = tp.z;
 
 			e = e->edge_left_next;
 		}
@@ -183,6 +167,38 @@ void ViewerWidget::drawColoredCube(double azimut, double zenit, int project, dou
 		fillTriangleScanline(points[0], points[1], points[2], colors[idx], avgZ);
 		idx++;
 	}
+	update();
+}
+
+void ViewerWidget::drawColoredModel(double azimut, double zenit, int project, double distance, QColor color)
+{
+	if (!wingedEdge) return;
+	if (wingedEdge->getFaces().empty()) return;
+
+	clearBuffers();
+
+
+	int centerX = width() / 2;
+	int centerY = height() / 2;
+
+	for (Face* face : wingedEdge->getFaces()) {
+		W_Edge* e = face->edge;
+		QPoint points[3];
+		double zVals[3];
+
+		for (int i = 0; i < 3; i++) {
+			Vertex* v = e->vert_origin;
+			TransformedPoint tp = transformVertex(v, azimut, zenit, project, distance, centerX, centerY);
+			points[i] = tp.screen;
+			zVals[i] = tp.z;
+			e = e->edge_left_next;
+		}
+
+		double avgZ = (zVals[0] + zVals[1] + zVals[2]) / 3.0;
+
+		fillTriangleScanline(points[0], points[1], points[2], color, avgZ);
+	}
+
 	update();
 }
 
@@ -302,34 +318,6 @@ void ViewerWidget::drawWingedEdge(double azimut, double zenit, int project, doub
 	if (!wingedEdge) return;
 	clear();
 
-	//rdiany
-	double phi = azimut * M_PI / 180;
-	double theta = zenit * M_PI / 180;
-
-	//normaly
-	double nx = sin(theta) * sin(phi);
-	double ny = sin(theta) * cos(phi);
-	double nz = cos(theta);
-
-		//kolme
-
-	double ux = sin(theta + M_PI / 2.0) * sin(phi);
-	double uy = sin(theta + M_PI / 2.0) * cos(phi);
-	double uz = cos(theta + M_PI / 2.0);
-
-
-	double vx = uy * nz - uz * ny;
-	double vy = uz * nx - ux * nz;
-	double vz = ux * ny - uy * nz;
-
-	//detailnejsia ortonormalizacia lebo som to mala skreslene.  
-	double dot_v_u = vx * ux + vy * uy + vz * uz;
-	double dot_v_n = vx * nx + vy * ny + vz * nz;
-
-	vx = vx - dot_v_u * ux - dot_v_n * nx;
-	vy = vy - dot_v_u * uy - dot_v_n * ny;
-	vz = vz - dot_v_u * uz - dot_v_n * nz;
-
 	int centerX = width() / 2;
 	int centerY = height() / 2;
 
@@ -337,34 +325,10 @@ void ViewerWidget::drawWingedEdge(double azimut, double zenit, int project, doub
 		Vertex* v1 = e->vert_origin;
 		Vertex* v2 = e->vert_destination;
 
-		// transform
-		double x1p = v1->x * vx + v1->y * vy + v1->z * vz;
-		double y1p = v1->x * ux + v1->y * uy + v1->z * uz;
-		double z1p = v1->x * nx + v1->y * ny + v1->z * nz;
+		TransformedPoint tp1 = transformVertex(v1, azimut, zenit, project, distance, centerX, centerY);
+		TransformedPoint tp2 = transformVertex(v2, azimut, zenit, project, distance, centerX, centerY);
 
-		double x2p = v2->x * vx + v2->y * vy + v2->z * vz;
-		double y2p = v2->x * ux + v2->y * uy + v2->z * uz;
-		double z2p = v2->x * nx + v2->y * ny + v2->z * nz;
-
-		double x1_2d, y1_2d, x2_2d, y2_2d;
-
-		if (project == 0) { //rovnobezna
-			x1_2d = x1p;
-			y1_2d = y1p;
-			x2_2d = x2p;
-			y2_2d = y2p;
-		}
-		else {//stredova
-			x1_2d = (x1p * distance) / (z1p + distance);
-			y1_2d = (y1p * distance) / (z1p + distance);
-			x2_2d = (x2p * distance) / (z2p + distance);
-			y2_2d = (y2p * distance) / (z2p + distance);
-		}
-
-		QPoint p1(x1_2d + centerX, centerY- y1_2d);
-		QPoint p2(x2_2d + centerX,centerY - y2_2d);
-
-		drawLine(p1, p2, color, algType);
+		drawLine(tp1.screen, tp2.screen, color, algType);
 	}
 	update();
 }
