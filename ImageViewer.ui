@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>937</width>
+    <width>918</width>
     <height>675</height>
    </rect>
   </property>
@@ -25,8 +25,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>629</width>
-         <height>276</height>
+         <width>609</width>
+         <height>245</height>
         </rect>
        </property>
       </widget>
@@ -146,15 +146,6 @@
           <string>Source</string>
          </property>
          <layout class="QFormLayout" name="formLayout">
-          <item row="0" column="0">
-           <widget class="QSpinBox" name="sbX"/>
-          </item>
-          <item row="1" column="0">
-           <widget class="QSpinBox" name="sbY"/>
-          </item>
-          <item row="2" column="0">
-           <widget class="QSpinBox" name="sbZ"/>
-          </item>
           <item row="0" column="1">
            <widget class="QLabel" name="label_3">
             <property name="text">
@@ -176,6 +167,27 @@
             </property>
            </widget>
           </item>
+          <item row="0" column="0">
+           <widget class="QDoubleSpinBox" name="dsbX">
+            <property name="maximum">
+             <double>500.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QDoubleSpinBox" name="dsbY">
+            <property name="maximum">
+             <double>500.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QDoubleSpinBox" name="dsbZ">
+            <property name="maximum">
+             <double>500.000000000000000</double>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>
@@ -186,13 +198,25 @@
          </property>
          <layout class="QFormLayout" name="formLayout_2">
           <item row="0" column="0">
-           <widget class="QSpinBox" name="sbR"/>
+           <widget class="QSpinBox" name="sbR">
+            <property name="maximum">
+             <number>255</number>
+            </property>
+           </widget>
           </item>
           <item row="1" column="0">
-           <widget class="QSpinBox" name="sbG"/>
+           <widget class="QSpinBox" name="sbG">
+            <property name="maximum">
+             <number>255</number>
+            </property>
+           </widget>
           </item>
           <item row="2" column="0">
-           <widget class="QSpinBox" name="sbB"/>
+           <widget class="QSpinBox" name="sbB">
+            <property name="maximum">
+             <number>255</number>
+            </property>
+           </widget>
           </item>
           <item row="0" column="1">
            <widget class="QLabel" name="label_6">
@@ -225,13 +249,11 @@
          </property>
          <layout class="QFormLayout" name="formLayout_3">
           <item row="0" column="0">
-           <widget class="QSpinBox" name="sbAR"/>
-          </item>
-          <item row="1" column="0">
-           <widget class="QSpinBox" name="sbAG"/>
-          </item>
-          <item row="2" column="0">
-           <widget class="QSpinBox" name="sbAB"/>
+           <widget class="QSpinBox" name="sbAR">
+            <property name="maximum">
+             <number>255</number>
+            </property>
+           </widget>
           </item>
           <item row="0" column="1">
            <widget class="QLabel" name="label_9">
@@ -240,10 +262,24 @@
             </property>
            </widget>
           </item>
+          <item row="1" column="0">
+           <widget class="QSpinBox" name="sbAG">
+            <property name="maximum">
+             <number>255</number>
+            </property>
+           </widget>
+          </item>
           <item row="1" column="1">
            <widget class="QLabel" name="label_10">
             <property name="text">
              <string>G</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QSpinBox" name="sbAB">
+            <property name="maximum">
+             <number>255</number>
             </property>
            </widget>
           </item>
@@ -263,51 +299,20 @@
           <string>POM koeficienty</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_6">
-          <item row="4" column="3">
-           <widget class="QDoubleSpinBox" name="doubleSpinBox_AB"/>
-          </item>
-          <item row="4" column="1">
-           <widget class="QDoubleSpinBox" name="doubleSpinBox_AR"/>
-          </item>
-          <item row="2" column="1">
-           <widget class="QDoubleSpinBox" name="doubleSpinBox_DR"/>
-          </item>
-          <item row="3" column="1">
-           <widget class="QDoubleSpinBox" name="doubleSpinBox_RR"/>
-          </item>
-          <item row="3" column="3">
-           <widget class="QDoubleSpinBox" name="doubleSpinBox_RB"/>
-          </item>
           <item row="2" column="2">
-           <widget class="QDoubleSpinBox" name="doubleSpinBox_DG"/>
-          </item>
-          <item row="2" column="3">
-           <widget class="QDoubleSpinBox" name="doubleSpinBox_DB"/>
-          </item>
-          <item row="4" column="2">
-           <widget class="QDoubleSpinBox" name="doubleSpinBox_AG"/>
-          </item>
-          <item row="3" column="2">
-           <widget class="QDoubleSpinBox" name="doubleSpinBox_RG"/>
+           <widget class="QDoubleSpinBox" name="doubleSpinBox_DG">
+            <property name="maximum">
+             <double>1.000000000000000</double>
+            </property>
+            <property name="singleStep">
+             <double>0.010000000000000</double>
+            </property>
+           </widget>
           </item>
           <item row="2" column="0">
            <widget class="QLabel" name="label_12">
             <property name="text">
              <string>difusion</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="0">
-           <widget class="QLabel" name="label_13">
-            <property name="text">
-             <string>reflection</string>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="0">
-           <widget class="QLabel" name="label_14">
-            <property name="text">
-             <string>ambient</string>
             </property>
            </widget>
           </item>
@@ -325,10 +330,114 @@
             </property>
            </widget>
           </item>
+          <item row="4" column="2">
+           <widget class="QDoubleSpinBox" name="doubleSpinBox_AG">
+            <property name="maximum">
+             <double>1.000000000000000</double>
+            </property>
+            <property name="singleStep">
+             <double>0.010000000000000</double>
+            </property>
+           </widget>
+          </item>
           <item row="0" column="3">
            <widget class="QLabel" name="label_17">
             <property name="text">
              <string>B</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QDoubleSpinBox" name="doubleSpinBox_DR">
+            <property name="maximum">
+             <double>1.000000000000000</double>
+            </property>
+            <property name="singleStep">
+             <double>0.010000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="2">
+           <widget class="QDoubleSpinBox" name="doubleSpinBox_RG">
+            <property name="maximum">
+             <double>1.000000000000000</double>
+            </property>
+            <property name="singleStep">
+             <double>0.010000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="label_13">
+            <property name="text">
+             <string>reflection</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="3">
+           <widget class="QDoubleSpinBox" name="doubleSpinBox_AB">
+            <property name="maximum">
+             <double>1.000000000000000</double>
+            </property>
+            <property name="singleStep">
+             <double>0.010000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="3">
+           <widget class="QDoubleSpinBox" name="doubleSpinBox_RB">
+            <property name="maximum">
+             <double>1.000000000000000</double>
+            </property>
+            <property name="singleStep">
+             <double>0.010000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QDoubleSpinBox" name="doubleSpinBox_RR">
+            <property name="maximum">
+             <double>1.000000000000000</double>
+            </property>
+            <property name="singleStep">
+             <double>0.010000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QDoubleSpinBox" name="doubleSpinBox_AR">
+            <property name="maximum">
+             <double>1.000000000000000</double>
+            </property>
+            <property name="singleStep">
+             <double>0.010000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="3">
+           <widget class="QDoubleSpinBox" name="doubleSpinBox_DB">
+            <property name="maximum">
+             <double>1.000000000000000</double>
+            </property>
+            <property name="singleStep">
+             <double>0.010000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="label_14">
+            <property name="text">
+             <string>ambient</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <widget class="QDoubleSpinBox" name="doubleSpinBox_Ostrost"/>
+          </item>
+          <item row="5" column="1">
+           <widget class="QLabel" name="label_19">
+            <property name="text">
+             <string>ostrosť</string>
             </property>
            </widget>
           </item>
@@ -345,7 +454,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>937</width>
+     <width>918</width>
      <height>21</height>
     </rect>
    </property>

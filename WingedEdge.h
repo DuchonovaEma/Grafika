@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <QString>
+#include <QVector3D>
 
 class W_Edge;//forward
 
@@ -8,6 +9,7 @@ class Vertex {
 public:
 	double x, y, z;
 	W_Edge* edge; //vychadzajuca hrana z tohto bodu
+	QVector3D normal; //(N)
 
 	Vertex(double xx, double yy, double zz, W_Edge* aedge) : x(xx), y(yy), z(zz), edge(aedge) {}
 };

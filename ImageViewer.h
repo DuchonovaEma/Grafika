@@ -56,4 +56,41 @@ private slots:
 	void on_horizontalSlider_Zenit_valueChanged(int value);
 	void on_pushButtonColorCube_clicked();
 	void on_pushButtonColorModel_clicked();
+
+	//phong
+	void on_dsbX_valueChanged(double x);
+	void on_dsbY_valueChanged(double y);
+	void on_dsbZ_valueChanged(double z);
+
+	void on_sbR_valueChanged(int r);
+	void on_sbG_valueChanged(int g);
+	void on_sbB_valueChanged(int b);
+
+	void on_sbAR_valueChanged(int r);
+	void on_sbAG_valueChanged(int g);
+	void on_sbAB_valueChanged(int b);
+
+	void on_doubleSpinBox_DR_valueChanged(double r);
+	void on_doubleSpinBox_DG_valueChanged(double g);
+	void on_doubleSpinBox_DB_valueChanged(double b);
+
+	void on_doubleSpinBox_RR_valueChanged(double r);
+	void on_doubleSpinBox_RG_valueChanged(double g);
+	void on_doubleSpinBox_RB_valueChanged(double b);
+
+	void on_doubleSpinBox_AR_valueChanged(double r);
+	void on_doubleSpinBox_AG_valueChanged(double g);
+	void on_doubleSpinBox_AB_valueChanged(double b);
+
+	void on_doubleSpinBox_Ostrost_valueChanged(double o);
+
+
+
+
+
+
+
+
+
+
 };

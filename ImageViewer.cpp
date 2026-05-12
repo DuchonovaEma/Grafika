@@ -383,6 +383,8 @@ void ImageViewer::on_horizontalSlider_azimut_valueChanged(int value)
 	double distance = ui->doubleSpinBoxDistance->value();
 
 	vW->drawWingedEdge(azimut, zenit, project, distance, globalColor, ui->comboBoxLineAlg->currentIndex());
+	vW->drawColoredModel(azimut, zenit, project, distance);
+
 }
 
 void ImageViewer::on_horizontalSlider_Zenit_valueChanged(int value)
@@ -395,6 +397,8 @@ void ImageViewer::on_horizontalSlider_Zenit_valueChanged(int value)
 	double distance = ui->doubleSpinBoxDistance->value();
 
 	vW->drawWingedEdge(azimut, zenit, project, distance, globalColor, ui->comboBoxLineAlg->currentIndex());
+	vW->drawColoredModel(azimut, zenit, project, distance);
+
 }
 
 void ImageViewer::on_pushButtonColorCube_clicked()
@@ -418,12 +422,171 @@ void ImageViewer::on_pushButtonColorModel_clicked() {
 		QMessageBox::warning(this, "Chyba", "Najprv naèítaj VTK model!");
 		return;
 	}
+
+	on_doubleSpinBox_DR_valueChanged(ui->doubleSpinBox_DR->value());
+	on_doubleSpinBox_DG_valueChanged(ui->doubleSpinBox_DG->value());
+	on_doubleSpinBox_DB_valueChanged(ui->doubleSpinBox_DB->value());
+
+	on_doubleSpinBox_AR_valueChanged(ui->doubleSpinBox_AR->value());
+	on_doubleSpinBox_AG_valueChanged(ui->doubleSpinBox_AG->value());
+	on_doubleSpinBox_AB_valueChanged(ui->doubleSpinBox_AB->value());
+
+	on_doubleSpinBox_RR_valueChanged(ui->doubleSpinBox_RR->value());
+	on_doubleSpinBox_RG_valueChanged(ui->doubleSpinBox_RG->value());
+	on_doubleSpinBox_RB_valueChanged(ui->doubleSpinBox_RB->value());
+
+	on_doubleSpinBox_Ostrost_valueChanged(ui->doubleSpinBox_Ostrost->value());
+
+	on_sbR_valueChanged(ui->sbR->value());
+	on_sbG_valueChanged(ui->sbG->value());
+	on_sbB_valueChanged(ui->sbB->value());
+
+	on_sbAR_valueChanged(ui->sbAR->value());
+	on_sbAG_valueChanged(ui->sbAG->value());
+	on_sbAB_valueChanged(ui->sbAB->value());
+
+	on_dsbX_valueChanged(ui->dsbX->value());
+	on_dsbY_valueChanged(ui->dsbY->value());
+	on_dsbZ_valueChanged(ui->dsbZ->value());
+
+
+
 	double azimut = ui->horizontalSlider_azimut->value();
 	double zenit = ui->horizontalSlider_Zenit->value();
 	int project = ui->comboBoxProjection->currentIndex();
 	double distance = ui->doubleSpinBoxDistance->value();
 
-	vW->drawColoredModel(azimut, zenit, project, distance, globalColor);
+
+
+	vW->drawColoredModel(azimut, zenit, project, distance);
 }
+
+void ImageViewer::on_dsbX_valueChanged(double x)
+{
+	vW->light.position.setX(x);
+	vW->update();
+}
+
+void ImageViewer::on_dsbY_valueChanged(double y)
+{
+	vW->light.position.setY(y);
+	vW->update();
+}
+
+void ImageViewer::on_dsbZ_valueChanged(double z)
+{
+	vW->light.position.setZ(-z); //aby sa osvetlovala predna strana
+	vW->update();
+}
+
+void ImageViewer::on_sbR_valueChanged(int r)
+{
+	vW->light.color.setRed(r);
+	vW->update();
+}
+
+void ImageViewer::on_sbG_valueChanged(int g)
+{
+	vW->light.color.setGreen(g);
+	vW->update();
+}
+
+void ImageViewer::on_sbB_valueChanged(int b)
+{
+	vW->light.color.setBlue(b);
+	vW->update();
+}
+
+void ImageViewer::on_sbAR_valueChanged(int r)
+{
+	vW->ambientLight.setRed(r);
+	vW->update();
+}
+
+void ImageViewer::on_sbAG_valueChanged(int g)
+{
+	vW->ambientLight.setGreen(g);
+	vW->update();
+}
+
+void ImageViewer::on_sbAB_valueChanged(int b)
+{
+	vW->ambientLight.setBlue(b);
+	vW->update();
+}
+
+void ImageViewer::on_doubleSpinBox_DR_valueChanged(double r)
+{
+	vW->material.diffuseR=r;
+	vW->update();
+}
+
+void ImageViewer::on_doubleSpinBox_DG_valueChanged(double g)
+{
+	vW->material.diffuseG=g;
+	vW->update();
+}
+
+void ImageViewer::on_doubleSpinBox_DB_valueChanged(double b)
+{
+	vW->material.diffuseB=b;
+	vW->update();
+}
+
+void ImageViewer::on_doubleSpinBox_RR_valueChanged(double r)
+{
+	vW->material.specularR=r;
+	vW->update();
+}
+
+void ImageViewer::on_doubleSpinBox_RG_valueChanged(double g)
+{
+	vW->material.specularG=g;
+	vW->update();
+}
+
+void ImageViewer::on_doubleSpinBox_RB_valueChanged(double b)
+{
+	vW->material.specularB=b;
+	vW->update();
+}
+
+void ImageViewer::on_doubleSpinBox_AR_valueChanged(double r)
+{
+	vW->material.ambientR=r;
+	vW->update();
+}
+
+void ImageViewer::on_doubleSpinBox_AG_valueChanged(double g)
+{
+	vW->material.ambientG=g;
+	vW->update();
+}
+
+void ImageViewer::on_doubleSpinBox_AB_valueChanged(double b)
+{
+	vW->material.ambientB=b;
+	vW->update();
+}
+
+void ImageViewer::on_doubleSpinBox_Ostrost_valueChanged(double o)
+{
+	vW->material.ostrost=o;
+	vW->update();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

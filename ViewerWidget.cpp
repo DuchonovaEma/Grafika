@@ -15,8 +15,10 @@ ViewerWidget::TransformedPoint ViewerWidget::transformVertex(Vertex* v, double a
 	double ny = sin(theta) * cos(phi);
 	double nz = cos(theta);
 
-	//kolme
+	QVector3D viewDir(-nx, -ny, -nz); 
+	viewDir.normalize();
 
+	//kolme
 	double ux = sin(theta + M_PI / 2.0) * sin(phi);
 	double uy = sin(theta + M_PI / 2.0) * cos(phi);
 	double uz = cos(theta + M_PI / 2.0);
@@ -50,8 +52,55 @@ ViewerWidget::TransformedPoint ViewerWidget::transformVertex(Vertex* v, double a
 		sy = (int)round(centerY - (yp * d) / (zp + d));
 	}
 
-	return { QPoint(sx, sy), zp };
+	return { QPoint(sx, sy), zp, viewDir };
 
+}
+
+QColor ViewerWidget::Phong(QVector3D point, QVector3D normal, QVector3D viewDir)
+{
+
+	qDebug() << "Light color R:" << light.color.red() << "G:" << light.color.green() << "B:" << light.color.blue();
+	qDebug() << "Material diffuse R:" << material.diffuseR << "G:" << material.diffuseG << "B:" << material.diffuseB;
+	qDebug() << "Material ambient R:" << material.ambientR << "G:" << material.ambientG << "B:" << material.ambientB;
+	qDebug() << "Ambient light R:" << ambientLight.red() << "G:" << ambientLight.green() << "B:" << ambientLight.blue();
+	
+	double specularR = 0, specularG = 0, specularB = 0;
+	double diffuseR = 0, diffuseG = 0, diffuseB = 0;
+	QVector3D lightPos = (light.position - point).normalized(); //z bodu k svetlu (L)
+	double dotLN = QVector3D::dotProduct(normal, lightPos); //skalarny sucin L.N
+
+	if (dotLN > 0) {
+		QVector3D reflect = 2 * dotLN * normal - lightPos;
+		reflect.normalize();
+
+		diffuseR = (light.color.red() / 255) * material.diffuseR * dotLN;
+		diffuseG = (light.color.green() / 255) * material.diffuseG * dotLN;
+		diffuseB = (light.color.blue() / 255) * material.diffuseB * dotLN;
+
+
+		double dotVR = QVector3D::dotProduct(viewDir, reflect);
+		if (dotVR > 0) { //max
+			double spec = pow(dotVR, material.ostrost); //(V.R)^h
+
+			//Ir=Is*R*(V.R)^h
+			specularR = (light.color.red() / 255) * material.specularR * spec;
+			specularG = (light.color.green() / 255) * material.specularG * spec;
+			specularB = (light.color.blue() / 255) * material.specularB * spec;
+
+		}
+	}
+	double ambientR = (ambientLight.red() / 255) * material.ambientR;
+	double ambientG = (ambientLight.green() / 255) * material.ambientG;
+	double ambientB = (ambientLight.blue() / 255) * material.ambientB;
+
+	int r = qBound(0, (int)((ambientR + specularR + diffuseR) * 255), 255); //spocita zlozky (0-1) vynasobi ich na 0-255 hodnotu, oreze na cele cisla, da do intervalu 0-255 ak presiahne (qbound)
+	int g = qBound(0, (int)((ambientG + specularG + diffuseG) * 255), 255);
+	int b = qBound(0, (int)((ambientB + specularB + diffuseB) * 255), 255);
+
+	qDebug() << "Final color:" << r << g << b;
+qDebug() << "ambientR:" << ambientR << "diffuseR:" << diffuseR << "specularR:" << specularR;
+
+	return QColor(r,g,b);
 }
 
 ViewerWidget::ViewerWidget(QSize imgSize, QWidget* parent)
@@ -126,7 +175,6 @@ void ViewerWidget::drawColoredCube(double azimut, double zenit, int project, dou
 {
 	if (!wingedEdge) return;
 	if (wingedEdge->getFaces().empty()) return;
-
 	clearBuffers();
 
 	QVector<QColor> colors = {
@@ -170,7 +218,7 @@ void ViewerWidget::drawColoredCube(double azimut, double zenit, int project, dou
 	update();
 }
 
-void ViewerWidget::drawColoredModel(double azimut, double zenit, int project, double distance, QColor color)
+void ViewerWidget::drawColoredModel(double azimut, double zenit, int project, double distance)
 {
 	if (!wingedEdge) return;
 	if (wingedEdge->getFaces().empty()) return;
@@ -185,16 +233,31 @@ void ViewerWidget::drawColoredModel(double azimut, double zenit, int project, do
 		W_Edge* e = face->edge;
 		QPoint points[3];
 		double zVals[3];
+		QVector3D normals[3];
+		QVector3D worldPoints[3]; //body v svetovej
+		QVector3D viewDir;
 
 		for (int i = 0; i < 3; i++) {
 			Vertex* v = e->vert_origin;
+			worldPoints[i] = QVector3D(v->x, v->y, v->z);
 			TransformedPoint tp = transformVertex(v, azimut, zenit, project, distance, centerX, centerY);
 			points[i] = tp.screen;
 			zVals[i] = tp.z;
+			viewDir = tp.viewDir;
 			e = e->edge_left_next;
 		}
 
 		double avgZ = (zVals[0] + zVals[1] + zVals[2]) / 3.0;
+
+		QVector3D centerPoint= (worldPoints[0] + worldPoints[1] + worldPoints[2]) / 3.0; //stredy trojuholnikov
+		QVector3D normal = centerPoint.normalized(); //nrmaly
+
+		QColor color = Phong(centerPoint, normal, viewDir);
+
+		qDebug() << "Normal:" << normal.x() << normal.y() << normal.z();
+		qDebug() << "Center point:" << centerPoint.x() << centerPoint.y() << centerPoint.z();
+		qDebug() << "Light pos:" << light.position.x() << light.position.y() << light.position.z();
+		qDebug() << "ViewDir:" << viewDir.x() << viewDir.y() << viewDir.z();
 
 		fillTriangleScanline(points[0], points[1], points[2], color, avgZ);
 	}

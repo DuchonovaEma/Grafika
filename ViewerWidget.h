@@ -39,9 +39,15 @@ private:
 	struct TransformedPoint {
 		QPoint screen;
 		double z;
+		QVector3D viewDir; //(V)
+		QVector3D viewPos; //pohladove suradnice
 	};
 
 	TransformedPoint transformVertex(Vertex* v, double azimut, double zenit, int project, double distance, int centerX, int centerY);
+
+
+
+	
 
 
 public:
@@ -58,11 +64,29 @@ public:
 	void clearBuffers();
 	void drawPixel(int x, int y, const QColor& color, double z);
 
+	struct Light {
+		QVector3D position; //svetove (L)
+		QColor color;
+	};
+
+
+	struct Material {
+		double ambientR, ambientG, ambientB;   
+		double diffuseR, diffuseG, diffuseB;   
+		double specularR, specularG, specularB;
+		double ostrost;
+	};
+
+	Light light;
+	Material material;
+	QColor ambientLight;
+
 
 	void drawColoredCube(double azimut, double zenit, int project, double distance);
 
-	void drawColoredModel(double azimut, double zenit, int project, double distance, QColor color);
+	void drawColoredModel(double azimut, double zenit, int project, double distance);
 	
+	QColor Phong(QVector3D point, QVector3D normal, QVector3D viewDir);
 
 
 	//Image functions

@@ -224,6 +224,8 @@ void WingedEdge::createUVSphere(float radius, int parallels, int meridians)
 
     //vrcholy
     vertices.push_back(new Vertex(0, radius, 0, nullptr)); //severny pol
+    vertices.back()->normal = QVector3D(0, 1, 0);
+
 
     //rovnobezky
     for (int i = 0; i < parallels; i++) {
@@ -236,12 +238,14 @@ void WingedEdge::createUVSphere(float radius, int parallels, int meridians)
             double x = r * cos(phi);
             double z = r * sin(phi);
             vertices.push_back(new Vertex(x, y, z, nullptr)); //vytvorenie vrcholu 
+            vertices.back()->normal = QVector3D(x, y, z).normalized();
         }
     }
 
     //juzny pol
     int southPoleIndex = vertices.size();
     vertices.push_back(new Vertex(0, -radius, 0, nullptr));
+    vertices.back()->normal = QVector3D(0, -1, 0);
 
     //trojuholniky
     //medzi severnym polom a prvu rovnobezkou
