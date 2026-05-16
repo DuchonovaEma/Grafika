@@ -68,6 +68,7 @@ QColor ViewerWidget::Phong(QVector3D point, QVector3D normal, QVector3D viewDir)
 	double diffuseR = 0, diffuseG = 0, diffuseB = 0;
 	QVector3D lightPos = (light.position - point).normalized(); //z bodu k svetlu (L)
 	double dotLN = QVector3D::dotProduct(normal, lightPos); //skalarny sucin L.N
+	qDebug() << "dotLN=" << dotLN << "normal=" << normal << "lightPos=" << lightPos;
 
 	if (dotLN > 0) {
 		QVector3D reflect = 2 * dotLN * normal - lightPos;
@@ -98,7 +99,7 @@ QColor ViewerWidget::Phong(QVector3D point, QVector3D normal, QVector3D viewDir)
 	int b = qBound(0, (int)((ambientB + specularB + diffuseB) * 255), 255);
 
 	qDebug() << "Final color:" << r << g << b;
-qDebug() << "ambientR:" << ambientR << "diffuseR:" << diffuseR << "specularR:" << specularR;
+	qDebug() << "ambientR:" << ambientR << "diffuseR:" << diffuseR << "specularR:" << specularR;
 
 	return QColor(r,g,b);
 }
@@ -218,7 +219,7 @@ void ViewerWidget::drawColoredCube(double azimut, double zenit, int project, dou
 	update();
 }
 
-void ViewerWidget::drawColoredModel(double azimut, double zenit, int project, double distance)
+void ViewerWidget::drawColoredModel(double azimut, double zenit, int project, double distance, bool useGouraud)
 {
 	if (!wingedEdge) return;
 	if (wingedEdge->getFaces().empty()) return;
@@ -233,9 +234,9 @@ void ViewerWidget::drawColoredModel(double azimut, double zenit, int project, do
 		W_Edge* e = face->edge;
 		QPoint points[3];
 		double zVals[3];
-		QVector3D normals[3];
 		QVector3D worldPoints[3]; //body v svetovej
 		QVector3D viewDir;
+		QColor vertexColors[3];
 
 		for (int i = 0; i < 3; i++) {
 			Vertex* v = e->vert_origin;
@@ -244,22 +245,27 @@ void ViewerWidget::drawColoredModel(double azimut, double zenit, int project, do
 			points[i] = tp.screen;
 			zVals[i] = tp.z;
 			viewDir = tp.viewDir;
+			if (useGouraud) {
+				vertexColors[i] = Phong(worldPoints[i], v->normal, viewDir);
+			}
 			e = e->edge_left_next;
 		}
 
 		double avgZ = (zVals[0] + zVals[1] + zVals[2]) / 3.0;
+		
 
-		QVector3D centerPoint= (worldPoints[0] + worldPoints[1] + worldPoints[2]) / 3.0; //stredy trojuholnikov
-		QVector3D normal = centerPoint.normalized(); //nrmaly
+		if (useGouraud) {
+			fillTriangleBarycentric(points[0], points[1], points[2], vertexColors[0], vertexColors[1], vertexColors[2]);
+		}
+		else {
+			QVector3D centerPoint = (worldPoints[0] + worldPoints[1] + worldPoints[2]) / 3.0; //stredy trojuholnikov
+			QVector3D normal = centerPoint.normalized(); //nrmaly pre konstantne 
 
-		QColor color = Phong(centerPoint, normal, viewDir);
+			QColor color = Phong(centerPoint, normal, viewDir);
 
-		qDebug() << "Normal:" << normal.x() << normal.y() << normal.z();
-		qDebug() << "Center point:" << centerPoint.x() << centerPoint.y() << centerPoint.z();
-		qDebug() << "Light pos:" << light.position.x() << light.position.y() << light.position.z();
-		qDebug() << "ViewDir:" << viewDir.x() << viewDir.y() << viewDir.z();
 
-		fillTriangleScanline(points[0], points[1], points[2], color, avgZ);
+			fillTriangleScanline(points[0], points[1], points[2], color, avgZ);
+		}
 	}
 
 	update();
@@ -715,7 +721,7 @@ void ViewerWidget::rotate(double angle, bool clockwise, int algType, QColor colo
 
 		int xNew, yNew;
 		if (clockwise) {
-			// V smere hodinových ručičiek 
+			// V smere 
 			xNew = round(x * cosA + y * sinA);
 			yNew = round(-x * sinA + y * cosA);
 		}
@@ -729,7 +735,7 @@ void ViewerWidget::rotate(double angle, bool clockwise, int algType, QColor colo
 		clear();
 		drawLine(getDrawLineBegin(), lineEnd, color, algType);
 	}
-	// POLYGÓN
+	// plygon
 	else if (polygonPoints.size() >= 3) {
 		QPoint center = polygonPoints.first();
 		QVector<QPoint> rotatedPoints;
@@ -767,7 +773,7 @@ void ViewerWidget::mirrorOverLine(QPoint A, QPoint B, QColor color, int algType)
 {
 	if (polygonPoints.isEmpty() && (getDrawLineBegin() == QPoint() || lineEnd == QPoint())) return;
 
-	// Smerový vektor úsečky AB
+	// Smerovy vektor AB
 	int u = B.x() - A.x();
 	int v = B.y() - A.y();
 
@@ -779,7 +785,7 @@ void ViewerWidget::mirrorOverLine(QPoint A, QPoint B, QColor color, int algType)
 	int denominator = a * a + b * b;
 	if (denominator == 0) return;
 
-	// PRE ÚSEČKU
+	// usecka
 	if (getDrawLineActivated() == false && getDrawLineBegin() != QPoint() && lineEnd != QPoint()) {
 		QPoint center = getDrawLineBegin();
 		QPoint end = lineEnd;
@@ -794,7 +800,7 @@ void ViewerWidget::mirrorOverLine(QPoint A, QPoint B, QColor color, int algType)
 		clear();
 		drawLine(getDrawLineBegin(), getLineEnd(), color, algType);
 	}
-	// PRE POLYGÓN
+	// poly
 	else if (polygonPoints.size() >= 3) {
 		QVector<QPoint> mirroredPoints;
 
@@ -823,7 +829,7 @@ QPoint ViewerWidget::mirrorPoint(QPoint p, int a, int b, int c, int denominator)
 
 void ViewerWidget::scale(double scaleX, double scaleY, int algType, QColor color)
 {
-	// KRUŽNICA
+	// kruh
 	if (getDrawCircleActivated() == false && circleRadius > 0) {
 		double avgScale = (scaleX + scaleY) / 2.0;
 		int newRadius = round(circleRadius * avgScale);
@@ -851,7 +857,7 @@ void ViewerWidget::scale(double scaleX, double scaleY, int algType, QColor color
 		clear();
 		drawLine(getDrawLineBegin(), getLineEnd(), color, algType);
 	}
-	// POLYGÓN
+	// POLY
 	else if (polygonPoints.size() >= 3) {
 		QPoint center = polygonPoints.first();
 		QVector<QPoint> scaledPoints;
@@ -880,11 +886,11 @@ void ViewerWidget::scale(double scaleX, double scaleY, int algType, QColor color
 
 void ViewerWidget::shearX(double shearFactor, int algType, QColor color)
 {
-	// KRUŽNICA 
+	// KRUH
 	if (getDrawCircleActivated() == false && circleRadius > 0) {
 		return;  
 	}
-	// POLYGÓN
+	// POLY
 	else if (polygonPoints.size() >= 3) {
 		QPoint center = polygonPoints.first();  // prvý bod je stred
 		QVector<QPoint> shearedPoints;
@@ -929,7 +935,7 @@ void ViewerWidget::shearX(double shearFactor, int algType, QColor color)
 
 void ViewerWidget::moveObject(int dx, int dy, int algType, QColor color)
 {
-	// POLYGÓN
+	// POLY
 	if (polygonPoints.size() >= 3) {
 		for (int i = 0; i < polygonPoints.size(); i++) {
 			polygonPoints[i] = QPoint(polygonPoints[i].x() + dx, polygonPoints[i].y() + dy);
@@ -1243,7 +1249,7 @@ bool ViewerWidget::isPointInsidePolygon(QPoint point)
 		QPoint pj = polygonPoints[j];
 
 		bool intersect = ((pi.y() > point.y()) != (pj.y() > point.y())) &&
-			(point.x() < static_cast<double>(pj.x() - pi.x()) * static_cast<double>(point.y() - pi.y()) / static_cast<double>(pj.y() - pi.y()) + pi.x());
+			(point.x() < (double)(pj.x() - pi.x()) * (point.y() - pi.y()) / (double)(pj.y() - pi.y()) + pi.x());
 		if (intersect) inside = !inside;
 	}
 	return inside;
@@ -1251,6 +1257,8 @@ bool ViewerWidget::isPointInsidePolygon(QPoint point)
 void ViewerWidget::fillTriangleBarycentric(QPoint p0, QPoint p1, QPoint p2,
 	QColor c0, QColor c1, QColor c2)
 {
+	qDebug() << "fillTriangleBarycentric START";
+
 	
 	
 	if (p0.y() > p1.y()) { std::swap(p0, p1); std::swap(c0, c1); }
@@ -1258,50 +1266,67 @@ void ViewerWidget::fillTriangleBarycentric(QPoint p0, QPoint p1, QPoint p2,
 	if (p1.y() > p2.y()) { std::swap(p1, p2); std::swap(c1, c2); }
 
 	
-	double area = triangleArea(p0, p1, p2);
-	if (area <= 0) return;
+	double doubleArea = (p1.x() - p0.x()) * (p2.y() - p0.y()) - (p1.y() - p0.y()) * (p2.x() - p0.x());
+	if (doubleArea == 0) return;
 
 	
 	int yStart = p0.y();
 	int yEnd = p2.y();
 
+	if (yStart < 0) yStart = 0;
+	if (yEnd >= height()) yEnd = height() - 1;
+
 	for (int y = yStart; y <= yEnd; y++) {
 		int xStart, xEnd;
 
 		if (y < p1.y()) {
-			xStart = p0.x() + (double)(y - p0.y()) * (p1.x() - p0.x()) / (p1.y() - p0.y()) + 0.5;
-			xEnd = p0.x() + (double)(y - p0.y()) * (p2.x() - p0.x()) / (p2.y() - p0.y()) + 0.5;
+			if (p1.y() - p0.y() != 0)
+				xStart = p0.x() + (double)(y - p0.y()) * (p1.x() - p0.x()) / (p1.y() - p0.y());
+			else
+				xStart = p0.x();
+
+			if (p2.y() - p0.y() != 0)
+				xEnd = p0.x() + (double)(y - p0.y()) * (p2.x() - p0.x()) / (p2.y() - p0.y());
+			else
+				xEnd = p0.x();
 		}
 		else {
-			xStart = p1.x() + (double)(y - p1.y()) * (p2.x() - p1.x()) / (p2.y() - p1.y()) + 0.5;
-			xEnd = p0.x() + (double)(y - p0.y()) * (p2.x() - p0.x()) / (p2.y() - p0.y()) + 0.5;
+			if (p2.y() - p1.y() != 0)
+				xStart = p1.x() + (double)(y - p1.y()) * (p2.x() - p1.x()) / (p2.y() - p1.y());
+			else
+				xStart = p1.x();
+
+			if (p2.y() - p0.y() != 0)
+				xEnd = p0.x() + (double)(y - p0.y()) * (p2.x() - p0.x()) / (p2.y() - p0.y());
+			else
+				xEnd = p0.x();
 		}
 
+		
 		if (xStart > xEnd) std::swap(xStart, xEnd);
 
 
 		for (int x = xStart; x <= xEnd; x++) {
-			double w0 = triangleArea(QPoint(x, y), p1, p2);
-			double w1 = triangleArea(p0, QPoint(x, y), p2);
-			double w2 = triangleArea(p0, p1, QPoint(x, y));
-
-			w0 /= area;
-			w1 /= area;
-			w2 /= area;
+			
+			double w0 = ((p1.x() - x) * (p2.y() - y) - (p1.y() - y) * (p2.x() - x)) / doubleArea;
+			double w1 = ((p2.x() - x) * (p0.y() - y) - (p2.y() - y) * (p0.x() - x)) / doubleArea;
+			double w2 = 1.0 - w0 - w1;
 
 			int r = c0.red() * w0 + c1.red() * w1 + c2.red() * w2 + 0.5;
 			int g = c0.green() * w0 + c1.green() * w1 + c2.green() * w2 + 0.5;
 			int b = c0.blue() * w0 + c1.blue() * w1 + c2.blue() * w2 + 0.5;
 
-			setPixel(x, y, QColor(r, g, b));
+			//setPixel(x, y, QColor(r, g, b));
+			drawPixel(x, y, QColor(r, g, b), 0);
 		}
 	}
+	qDebug() << "fillTriangleBarycentric end";
 	update();
 }
 
 void ViewerWidget::fillTriangleScanline(QPoint p0, QPoint p1, QPoint p2, QColor color, double z)
 {
-	// Usporiadanie podľa Y (a podľa X pri rovnakom Y)
+	// usporiadanie
 	if (p0.y() > p1.y()) std::swap(p0, p1);
 	if (p0.y() > p2.y()) std::swap(p0, p2);
 	if (p1.y() > p2.y()) std::swap(p1, p2);

@@ -176,6 +176,11 @@ void WingedEdge::loadFromVTK(const QString& filename)
 
         addTriangle(v1, v2, v3);
     }
+    //normaly
+    for (Vertex* v : vertices) {
+        QVector3D pos(v->x, v->y, v->z);
+        v->normal = pos.normalized();  
+    }
 
     file.close();
     connect();

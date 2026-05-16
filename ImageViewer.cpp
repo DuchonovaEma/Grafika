@@ -381,9 +381,10 @@ void ImageViewer::on_horizontalSlider_azimut_valueChanged(int value)
 	double zenit = ui->horizontalSlider_Zenit->value();
 	int project = ui->comboBoxProjection->currentIndex();
 	double distance = ui->doubleSpinBoxDistance->value();
+	bool useGouraud = ui->rbGouraud->isChecked();
 
 	vW->drawWingedEdge(azimut, zenit, project, distance, globalColor, ui->comboBoxLineAlg->currentIndex());
-	vW->drawColoredModel(azimut, zenit, project, distance);
+	vW->drawColoredModel(azimut, zenit, project, distance,useGouraud);
 
 }
 
@@ -395,9 +396,11 @@ void ImageViewer::on_horizontalSlider_Zenit_valueChanged(int value)
 	double zenit = value;
 	int project = ui->comboBoxProjection->currentIndex();
 	double distance = ui->doubleSpinBoxDistance->value();
+	bool useGouraud = ui->rbGouraud->isChecked();
+
 
 	vW->drawWingedEdge(azimut, zenit, project, distance, globalColor, ui->comboBoxLineAlg->currentIndex());
-	vW->drawColoredModel(azimut, zenit, project, distance);
+	vW->drawColoredModel(azimut, zenit, project, distance,useGouraud);
 
 }
 
@@ -455,10 +458,11 @@ void ImageViewer::on_pushButtonColorModel_clicked() {
 	double zenit = ui->horizontalSlider_Zenit->value();
 	int project = ui->comboBoxProjection->currentIndex();
 	double distance = ui->doubleSpinBoxDistance->value();
+	bool useGouraud = ui->rbGouraud->isChecked();
 
 
 
-	vW->drawColoredModel(azimut, zenit, project, distance);
+	vW->drawColoredModel(azimut, zenit, project, distance,useGouraud);
 }
 
 void ImageViewer::on_dsbX_valueChanged(double x)

@@ -507,6 +507,20 @@
           </property>
          </widget>
         </item>
+        <item>
+         <widget class="QRadioButton" name="rbConstant">
+          <property name="text">
+           <string>Constant</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="rbGouraud">
+          <property name="text">
+           <string>Gouraud</string>
+          </property>
+         </widget>
+        </item>
        </layout>
       </widget>
      </item>

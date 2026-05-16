@@ -40,7 +40,6 @@ private:
 		QPoint screen;
 		double z;
 		QVector3D viewDir; //(V)
-		QVector3D viewPos; //pohladove suradnice
 	};
 
 	TransformedPoint transformVertex(Vertex* v, double azimut, double zenit, int project, double distance, int centerX, int centerY);
@@ -84,7 +83,7 @@ public:
 
 	void drawColoredCube(double azimut, double zenit, int project, double distance);
 
-	void drawColoredModel(double azimut, double zenit, int project, double distance);
+	void drawColoredModel(double azimut, double zenit, int project, double distance, bool useGouraud);
 	
 	QColor Phong(QVector3D point, QVector3D normal, QVector3D viewDir);
 

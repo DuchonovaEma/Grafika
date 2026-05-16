@@ -17,9 +17,9 @@ int main(int argc, char* argv[])
 
 	printf("Kocka bola ulozena do suboru kocka.vtk\n");*/
 
-	/*we.createUVSphere(100.0, 10, 10);
-	we.saveToVTK("sphere.vtk");
-	printf("sfera ulozena");*/
+	//we.createUVSphere(100.0,10,10);
+	//we.saveToVTK("sphere.vtk");
+	//printf("sfera ulozena");
 
 	ImageViewer w;
 	w.show();
